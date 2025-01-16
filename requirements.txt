@@ -1,0 +1,11 @@
+flask
+flask-cors
+gunicorn
+langchain
+langchain-openai
+langchain-community
+faiss-cpu
+PyPDF2
+docx2txt
+requests
+google-generativeai
