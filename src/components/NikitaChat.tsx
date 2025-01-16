@@ -24,13 +24,11 @@ interface ChatMessage {
 const NikitaChat: React.FC = () => {
   const [docId, setDocId] = useState<string>(""); // Document ID selected by the user
   const [question, setQuestion] = useState<string>(""); // User's question
-  const [answer, setAnswer] = useState<string>(""); // Answer from LLM
   const [visemeData, setVisemeData] = useState<MouthCue[] | null>(null); // Viseme data for lip sync
   const [loading, setLoading] = useState<boolean>(false); // Loading state
   const [error, setError] = useState<string>(""); // Error message
   const audioRef = useRef<HTMLAudioElement>(null); // Audio playback reference
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]); // Store the document UUIDs for selection
-  const [audioLoaded, setAudioLoaded] = useState<boolean>(false); // State to track if audio is loaded
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false); // State to track if audio is playing
   const [selectedImage, setSelectedImage] = useState<File | null>(null); // Selected image for analysis
   const [emotion, setEmotion] = useState<string | null>(null); // Detected emotion from camera
@@ -112,8 +110,6 @@ const NikitaChat: React.FC = () => {
 
     setLoading(true);
     setError("");
-    setAnswer("");
-    setAudioLoaded(false); // Reset audio loaded state
     setVisemeData(null); // Clear previous viseme data
     setIsAudioPlaying(false); // Reset audio playing state
 
@@ -149,7 +145,6 @@ const NikitaChat: React.FC = () => {
         setChatMessages((prev) => [...prev, { type: "question", content: question }]);
       }
 
-      setAnswer(response.data.answer || response.data.data || "No answer found.");
       setVisemeData(response.data.visemeData || null);
 
       // Add the answer to the chat
@@ -162,7 +157,6 @@ const NikitaChat: React.FC = () => {
 
         // Set audio element's oncanplaythrough event to trigger animation
         audio.oncanplaythrough = () => {
-          setAudioLoaded(true); // Mark audio as loaded
           setIsAudioPlaying(true); // Mark audio as playing
           audio.play().catch((error) => {
             console.error("Error playing audio:", error);
@@ -172,7 +166,6 @@ const NikitaChat: React.FC = () => {
         // Detect when the audio ends
         audio.onended = () => {
           setIsAudioPlaying(false); // Mark audio as stopped
-          setAudioLoaded(false); // Reset audio loaded state
         };
       }
     } catch (err) {
@@ -214,7 +207,7 @@ const NikitaChat: React.FC = () => {
         }}
       >
         <Canvas style={{ height: "100%", borderRadius: "20px" }}>
-          <Nikita visemeData={audioLoaded ? visemeData : null} audioLoaded={audioLoaded} isAudioPlaying={isAudioPlaying} />
+          <Nikita visemeData={visemeData} isAudioPlaying={isAudioPlaying} />
         </Canvas>
       </Box>
 
@@ -412,7 +405,7 @@ const NikitaChat: React.FC = () => {
 };
 
 // Nikita's Model Component
-function Nikita({ visemeData, audioLoaded, isAudioPlaying }: { visemeData: MouthCue[] | null; audioLoaded: boolean; isAudioPlaying: boolean }) {
+function Nikita({ visemeData, isAudioPlaying }: { visemeData: MouthCue[] | null; isAudioPlaying: boolean }) {
   const { nodes, materials } = useGLTF("/models/nikita.glb") as any;
   const headMeshRef = useRef<THREE.SkinnedMesh>(null);
   const teethMeshRef = useRef<THREE.SkinnedMesh>(null);
