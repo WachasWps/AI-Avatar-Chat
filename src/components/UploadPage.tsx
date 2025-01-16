@@ -78,49 +78,51 @@ const UploadPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #f3f4f6, #e2e8f0)',
+                background: 'radial-gradient(circle at top left, #7b2ff7, #2a2a72, #1c1c1c)',
+                overflow: 'hidden',
             }}
         >
             <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1 }}
                 style={{
-                    backgroundColor: '#ffffff',
-                    padding: '40px',
+                    background: 'linear-gradient(145deg, #1e1e2f, #29293e)',
+                    padding: '50px',
                     borderRadius: '16px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
                     textAlign: 'center',
                     width: '100%',
                     maxWidth: '600px',
                 }}
             >
-                {/* Password Check */}
                 {!isAuthenticated ? (
                     <>
-                        {/* Heading for the Password Card */}
                         <Typography 
                             variant="h4" 
-                            sx={{ marginBottom: '20px', fontWeight: 'bold', color: '#333' }}
+                            sx={{ marginBottom: '20px', fontWeight: 'bold', color: '#fff' }}
                         >
-                            Admin Access Required
+                            Welcome Back, Admin
                         </Typography>
                         <Typography
                             variant="subtitle1"
-                            sx={{ marginBottom: '20px', color: '#666' }}
+                            sx={{ marginBottom: '20px', color: '#aaa' }}
                         >
-                            Please enter the admin password to proceed.
+                            Enter your password to unlock dynamic possibilities.
                         </Typography>
 
                         <TextField
                             type="password"
                             variant="outlined"
                             fullWidth
-                            placeholder="Enter Password"
+                            placeholder="Enter Admin Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()} // Enter key support
-                            sx={{ marginBottom: '20px' }}
+                            onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                            sx={{ marginBottom: '20px', 
+                                input: { color: '#fff' }, 
+                                '& .MuiOutlinedInput-root': { borderColor: '#7b2ff7' }
+                            }}
                         />
                         <Button
                             variant="contained"
@@ -129,36 +131,38 @@ const UploadPage: React.FC = () => {
                                 fontSize: '16px',
                                 borderRadius: '8px',
                                 background: 'linear-gradient(45deg, #7b2ff7, #9c1aff)',
+                                color: '#fff',
                                 '&:hover': {
                                     background: 'linear-gradient(45deg, #9c1aff, #7b2ff7)',
                                 },
                             }}
                             onClick={handlePasswordSubmit}
                         >
-                            Submit
+                            Unlock
                         </Button>
                         {message && (
-                            <Alert severity="error" sx={{ marginTop: '20px' }}>
+                            <Alert severity="error" sx={{ marginTop: '20px', backgroundColor: '#d32f2f', color: '#fff' }}>
                                 {message}
                             </Alert>
                         )}
                     </>
                 ) : (
                     <>
-                        <Typography variant="h4" sx={{ marginBottom: '20px' }}>
-                            Upload Your PDF
+                        <Typography variant="h4" sx={{ marginBottom: '20px', fontWeight: 'bold', color: '#fff' }}>
+                            Upload Your File
                         </Typography>
-                        <Typography variant="subtitle1" sx={{ marginBottom: '20px', color: '#555' }}>
-                            Drag and drop or select your PDF file below.
+                        <Typography variant="subtitle1" sx={{ marginBottom: '20px', color: '#ccc' }}>
+                            Drag and drop or select a file to proceed.
                         </Typography>
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             style={{
-                                backgroundColor: '#f9f9f9',
-                                border: '2px dashed #4caf50',
+                                background: 'linear-gradient(145deg, #2a2a72, #1c1c1c)',
+                                border: '2px dashed #7b2ff7',
                                 borderRadius: '10px',
-                                padding: '30px',
-                                margin: '30px 0',
+                                padding: '40px',
+                                margin: '20px 0',
+                                color: '#fff',
                             }}
                         >
                             <input
@@ -170,8 +174,9 @@ const UploadPage: React.FC = () => {
                                     width: '100%',
                                     padding: '10px',
                                     backgroundColor: 'transparent',
-                                    color: '#333',
+                                    color: '#fff',
                                     cursor: 'pointer',
+                                    border: 'none',
                                 }}
                             />
                         </motion.div>
@@ -183,6 +188,7 @@ const UploadPage: React.FC = () => {
                                 fontSize: '16px',
                                 borderRadius: '8px',
                                 background: 'linear-gradient(45deg, #7b2ff7, #9c1aff)',
+                                color: '#fff',
                                 '&:hover': {
                                     background: 'linear-gradient(45deg, #9c1aff, #7b2ff7)',
                                 },
@@ -190,17 +196,21 @@ const UploadPage: React.FC = () => {
                             onClick={handleUpload}
                             disabled={loading}
                         >
-                            {loading ? 'Uploading...' : 'Upload'}
+                            {loading ? 'Uploading...' : 'Upload File'}
                         </Button>
                         {loading && (
                             <Box mt={2}>
-                                <CircularProgress />
+                                <CircularProgress sx={{ color: '#7b2ff7' }} />
                             </Box>
                         )}
                         {message && (
                             <Alert
                                 severity={message.includes('successful') ? 'success' : 'error'}
-                                sx={{ marginTop: '20px' }}
+                                sx={{
+                                    marginTop: '20px',
+                                    backgroundColor: message.includes('successful') ? '#388e3c' : '#d32f2f',
+                                    color: '#fff',
+                                }}
                             >
                                 {message}
                             </Alert>
@@ -214,13 +224,14 @@ const UploadPage: React.FC = () => {
                                     fontSize: '16px',
                                     borderRadius: '8px',
                                     background: 'linear-gradient(45deg, #7b2ff7, #9c1aff)',
+                                    color: '#fff',
                                     '&:hover': {
                                         background: 'linear-gradient(45deg, #9c1aff, #7b2ff7)',
                                     },
                                 }}
                                 onClick={goToQnaPage}
                             >
-                                Go to Q&A
+                                Proceed to Q&A
                             </Button>
                         )}
                     </>

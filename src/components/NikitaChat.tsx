@@ -3,6 +3,7 @@ import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import { Box, TextField, Button, Typography, CircularProgress, Alert, MenuItem, Select, FormControl, InputLabel, IconButton } from "@mui/material";
 import AttachFileIcon from "@mui/icons-material/AttachFile"; // Attachment icon
+import CloseIcon from "@mui/icons-material/Close"; // Cross button icon
 import * as THREE from "three";
 import { corresponding } from "./corresponding";
 import { useAnimations, useGLTF, useFBX } from "@react-three/drei";
@@ -29,7 +30,7 @@ const NikitaChat: React.FC = () => {
   const [error, setError] = useState<string>(""); // Error message
   const audioRef = useRef<HTMLAudioElement>(null); // Audio playback reference
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]); // Store the document UUIDs for selection
-  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false); // State to track if audio is playing
+  const [audioLoaded, setAudioLoaded] = useState<boolean>(false); // State to track if audio is loaded
   const [selectedImage, setSelectedImage] = useState<File | null>(null); // Selected image for analysis
   const [emotion, setEmotion] = useState<string | null>(null); // Detected emotion from camera
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]); // Store chat messages
@@ -111,7 +112,6 @@ const NikitaChat: React.FC = () => {
     setLoading(true);
     setError("");
     setVisemeData(null); // Clear previous viseme data
-    setIsAudioPlaying(false); // Reset audio playing state
 
     try {
       let response;
@@ -120,6 +120,7 @@ const NikitaChat: React.FC = () => {
         const formData = new FormData();
         formData.append("file", selectedImage);
         formData.append("prompt", question);
+        formData.append("emotion", emotion || "neutral"); // Include detected emotion
 
         response = await axios.post("https://bw-avatar.onrender.com/analyze-image", formData, {
           headers: {
@@ -157,15 +158,10 @@ const NikitaChat: React.FC = () => {
 
         // Set audio element's oncanplaythrough event to trigger animation
         audio.oncanplaythrough = () => {
-          setIsAudioPlaying(true); // Mark audio as playing
+          setAudioLoaded(true); // Mark audio as loaded
           audio.play().catch((error) => {
             console.error("Error playing audio:", error);
           });
-        };
-
-        // Detect when the audio ends
-        audio.onended = () => {
-          setIsAudioPlaying(false); // Mark audio as stopped
         };
       }
     } catch (err) {
@@ -180,6 +176,13 @@ const NikitaChat: React.FC = () => {
     if (event.target.files && event.target.files[0]) {
       setSelectedImage(event.target.files[0]);
     }
+  };
+
+  // Function to remove the selected image
+  const handleRemoveImage = () => {
+    setSelectedImage(null); // Clear the selected image
+    setQuestion(""); // Clear the question input
+    setChatMessages([]); // Clear the chat messages
   };
 
   return (
@@ -207,7 +210,7 @@ const NikitaChat: React.FC = () => {
         }}
       >
         <Canvas style={{ height: "100%", borderRadius: "20px" }}>
-          <Nikita visemeData={visemeData} isAudioPlaying={isAudioPlaying} />
+          <Nikita visemeData={audioLoaded ? visemeData : null} />
         </Canvas>
       </Box>
 
@@ -242,21 +245,6 @@ const NikitaChat: React.FC = () => {
           Your AI Companion
         </Typography>
 
-        {emotion && (
-          <Alert
-            severity="info"
-            sx={{
-              marginBottom: "20px",
-              backgroundColor: "#e3f2fd",
-              color: "#1976d2",
-              fontSize: "16px",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            Detected Emotion: {emotion}
-          </Alert>
-        )}
-
         <FormControl fullWidth sx={{ marginBottom: "30px" }}>
           <InputLabel id="doc-select-label">Select Document</InputLabel>
           <Select
@@ -286,6 +274,39 @@ const NikitaChat: React.FC = () => {
           </Select>
         </FormControl>
 
+        {/* Image Preview with Cross Button */}
+        {selectedImage && (
+          <Box
+            sx={{
+              marginBottom: "20px",
+              display: "flex",
+              justifyContent: "center",
+              position: "relative",
+            }}
+          >
+            <img
+              src={URL.createObjectURL(selectedImage)}
+              alt="Preview"
+              style={{ maxWidth: "100%", maxHeight: "100px", borderRadius: "10px" }}
+            />
+            <IconButton
+              onClick={handleRemoveImage}
+              sx={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                color: "#ff4444",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 1)",
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        )}
+
         {/* Chat Window */}
         <Box
           sx={{
@@ -296,6 +317,10 @@ const NikitaChat: React.FC = () => {
             background: "#fff",
             borderRadius: "15px",
             boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            transition: "all 0.3s ease",
           }}
         >
           {chatMessages.map((message, index) => (
@@ -310,6 +335,10 @@ const NikitaChat: React.FC = () => {
                 alignSelf: message.type === "question" ? "flex-end" : "flex-start",
                 marginBottom: "10px",
                 animation: "fadeIn 0.3s ease",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
               }}
             >
               {message.type === "image" ? (
@@ -335,6 +364,7 @@ const NikitaChat: React.FC = () => {
             padding: "10px",
             borderRadius: "15px",
             boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+            transition: "all 0.3s ease",
           }}
         >
           <TextField
@@ -392,6 +422,7 @@ const NikitaChat: React.FC = () => {
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
               backgroundColor: "#ffebee",
               color: "#d32f2f",
+              transition: "all 0.3s ease",
             }}
           >
             {error}
@@ -404,21 +435,21 @@ const NikitaChat: React.FC = () => {
   );
 };
 
+// ... (keep the rest of your code the same)
+
 // Nikita's Model Component
-function Nikita({ visemeData, isAudioPlaying }: { visemeData: MouthCue[] | null; isAudioPlaying: boolean }) {
+function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
   const { nodes, materials } = useGLTF("/models/nikita.glb") as any;
   const headMeshRef = useRef<THREE.SkinnedMesh>(null);
   const teethMeshRef = useRef<THREE.SkinnedMesh>(null);
   const tongueMeshRef = useRef<THREE.SkinnedMesh>(null);
 
-  // Load idle and talking animations
+  // Load idle animation
   const { animations: idleAnimation } = useFBX("/animations/Idle.fbx");
-  const { animations: talkingAnimation } = useFBX("/animations/Talking.fbx");
-  idleAnimation[0].name = "Idle"; // Name the idle animation
-  talkingAnimation[0].name = "Talking"; // Name the talking animation
+  idleAnimation[0].name = "Idle"; // Name the animation
 
   const group = useRef<THREE.Group>(null);
-  const { actions } = useAnimations([idleAnimation[0], talkingAnimation[0]], group);
+  const { actions } = useAnimations([idleAnimation[0]], group);
 
   // Ensure camera position and angle are set correctly
   const { camera } = useThree();
@@ -432,36 +463,15 @@ function Nikita({ visemeData, isAudioPlaying }: { visemeData: MouthCue[] | null;
   // Play idle animation on mount
   useEffect(() => {
     if (actions["Idle"]) {
-      actions["Idle"].reset().fadeIn(0.1).play();
+      actions["Idle"].reset().fadeIn(0).play();
     }
 
     return () => {
       if (actions["Idle"]) {
-        actions["Idle"].fadeOut(0.5);
+        actions["Idle"].fadeOut(0);
       }
     };
   }, [actions]);
-
-  // Switch between idle and talking animations based on visemeData and isAudioPlaying
-  useEffect(() => {
-    if (visemeData && isAudioPlaying) {
-      // If visemeData is present and audio is playing, play the talking animation
-      if (actions["Talking"]) {
-        actions["Talking"].reset().fadeIn(0.5).play();
-      }
-      if (actions["Idle"]) {
-        actions["Idle"].fadeOut(0.5);
-      }
-    } else {
-      // If no visemeData or audio is not playing, play the idle animation
-      if (actions["Idle"]) {
-        actions["Idle"].reset().fadeIn(0.5).play();
-      }
-      if (actions["Talking"]) {
-        actions["Talking"].fadeOut(0.5);
-      }
-    }
-  }, [visemeData, isAudioPlaying, actions]);
 
   const updateMorphTargets = (time: number) => {
     if (!visemeData) return;
