@@ -34,6 +34,7 @@ const NikitaChat: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null); // Selected image for analysis
   const [emotion, setEmotion] = useState<string | null>(null); // Detected emotion from camera
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]); // Store chat messages
+  const [detectedEmotion, setDetectedEmotion] = useState<string | null>(null); // New state for detected emotion
 
   // Load Uploaded Documents (Fetching from a static list or API)
   useEffect(() => {
@@ -81,8 +82,10 @@ const NikitaChat: React.FC = () => {
                   (prev, current) => (current[1] > prev[1] ? current : prev)
                 );
                 setEmotion(primaryEmotion[0]); // Update emotion state
+                setDetectedEmotion(primaryEmotion[0]); // Update detected emotion state
               } else {
                 setEmotion(null); // Reset if no face detected
+                setDetectedEmotion(null); // Reset detected emotion state
               }
             }, 500); // Run detection every 500ms
 
@@ -244,6 +247,21 @@ const NikitaChat: React.FC = () => {
         >
           Your AI Companion
         </Typography>
+
+        {/* Display Detected Emotion */}
+        {detectedEmotion && (
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#6a1b9a",
+              fontWeight: "bold",
+              textAlign: "center",
+              marginBottom: "20px",
+            }}
+          >
+            Detected Emotion: {detectedEmotion}
+          </Typography>
+        )}
 
         <FormControl fullWidth sx={{ marginBottom: "30px" }}>
           <InputLabel id="doc-select-label">Select Document</InputLabel>
