@@ -453,7 +453,6 @@ const NikitaChat: React.FC = () => {
   );
 };
 
-// Nikita's Model Component
 function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
   const { nodes, materials } = useGLTF("/models/nikita.glb") as any;
   const headMeshRef = useRef<THREE.SkinnedMesh>(null);
@@ -522,10 +521,15 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
     }
   };
 
-  // Apply blinking to morph targets
+  // Apply blinking to morph targets based on the model
   useFrame(() => {
-    lerpMorphTarget("eyeBlinkLeft", blink ? 1 : 0, 0.2);
-    lerpMorphTarget("eyeBlinkRight", blink ? 1 : 0, 0.2);
+    if (nodes.Head_Mesh?.name.includes("nikita.glb")) {
+      lerpMorphTarget("eyeBlinkLeft", blink ? 1 : 0, 0.2);
+      lerpMorphTarget("eyeBlinkRight", blink ? 1 : 0, 0.2);
+    } else {
+      lerpMorphTarget("Eye_Blink_L", blink ? 1 : 0, 0.2);
+      lerpMorphTarget("Eye_Blink_R", blink ? 1 : 0, 0.2);
+    }
   });
 
   const updateMorphTargets = (time: number) => {
