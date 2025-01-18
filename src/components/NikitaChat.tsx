@@ -35,6 +35,7 @@ const NikitaChat: React.FC = () => {
   const [emotion, setEmotion] = useState<string | null>(null); // Detected emotion from camera
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]); // Store chat messages
   const [detectedEmotion, setDetectedEmotion] = useState<string | null>(null); // New state for detected emotion
+  const [language, setLanguage] = useState<string>("english"); // Language selection state
 
   // Load Uploaded Documents (Fetching from a static list or API)
   useEffect(() => {
@@ -135,7 +136,7 @@ const NikitaChat: React.FC = () => {
         setChatMessages((prev) => [
           ...prev,
           { type: "image", content: URL.createObjectURL(selectedImage) },
-          { type: "question", content: question },
+          { type: "question", content: `Answer in ${language}: ${question}` }, // Add language prefix
         ]);
       } else {
         // If no image is selected, send the question to the /qna endpoint
@@ -146,7 +147,10 @@ const NikitaChat: React.FC = () => {
         response = await axios.post(`https://bw-avatar.onrender.com/qna/${docId}`, payload);
 
         // Add the question to the chat
-        setChatMessages((prev) => [...prev, { type: "question", content: question }]);
+        setChatMessages((prev) => [
+          ...prev,
+          { type: "question", content: `Answer in ${language}: ${question}` }, // Add language prefix
+        ]);
       }
 
       setVisemeData(response.data.visemeData || null);
@@ -262,6 +266,31 @@ const NikitaChat: React.FC = () => {
             Detected Emotion: {detectedEmotion}
           </Typography>
         )}
+
+        {/* Language Selection Dropdown */}
+        <FormControl fullWidth sx={{ marginBottom: "20px" }}>
+          <InputLabel id="language-select-label">Select Language</InputLabel>
+          <Select
+            labelId="language-select-label"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            label="Select Language"
+            sx={{
+              backgroundColor: "#ffffff",
+              borderRadius: "15px",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+              fontSize: "16px",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+              },
+            }}
+          >
+            <MenuItem value="english">English</MenuItem>
+            <MenuItem value="hindi">Hindi</MenuItem>
+            <MenuItem value="marathi">Marathi</MenuItem>
+          </Select>
+        </FormControl>
 
         <FormControl fullWidth sx={{ marginBottom: "30px" }}>
           <InputLabel id="doc-select-label">Select Document</InputLabel>
@@ -453,6 +482,7 @@ const NikitaChat: React.FC = () => {
   );
 };
 
+// Nikita's Model Component
 function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
   const { nodes, materials } = useGLTF("/models/nikita.glb") as any;
   const headMeshRef = useRef<THREE.SkinnedMesh>(null);
