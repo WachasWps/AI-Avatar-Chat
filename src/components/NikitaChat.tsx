@@ -453,8 +453,6 @@ const NikitaChat: React.FC = () => {
   );
 };
 
-// ... (keep the rest of your code the same)
-
 // Nikita's Model Component
 function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
   const { nodes, materials } = useGLTF("/models/nikita.glb") as any;
@@ -509,6 +507,27 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
     return () => clearTimeout(blinkTimeout); // Cleanup on unmount
   }, []);
 
+  // Function to smoothly interpolate morph targets
+  const lerpMorphTarget = (target: string, value: number, speed: number) => {
+    const mesh = group.current?.getObjectByName("Head_Mesh") as THREE.SkinnedMesh;
+    if (mesh && mesh.morphTargetDictionary && mesh.morphTargetInfluences) {
+      const index = mesh.morphTargetDictionary[target];
+      if (index !== undefined) {
+        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(
+          mesh.morphTargetInfluences[index],
+          value,
+          speed
+        );
+      }
+    }
+  };
+
+  // Apply blinking to morph targets
+  useFrame(() => {
+    lerpMorphTarget("eyeBlinkLeft", blink ? 1 : 0, 0.2);
+    lerpMorphTarget("eyeBlinkRight", blink ? 1 : 0, 0.2);
+  });
+
   const updateMorphTargets = (time: number) => {
     if (!visemeData) return;
 
@@ -557,7 +576,6 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
 
     return () => cancelAnimationFrame(animationFrameId);
   }, [visemeData]);
-
 
   return (
     <>
