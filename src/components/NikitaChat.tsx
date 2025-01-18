@@ -461,6 +461,7 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
   const headMeshRef = useRef<THREE.SkinnedMesh>(null);
   const teethMeshRef = useRef<THREE.SkinnedMesh>(null);
   const tongueMeshRef = useRef<THREE.SkinnedMesh>(null);
+  const [blink, setBlink] = useState(false); // State for blinking
 
   // Load idle animation
   const { animations: idleAnimation } = useFBX("/animations/Idle.fbx");
@@ -490,6 +491,23 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
       }
     };
   }, [actions]);
+
+  // Blinking logic
+  useEffect(() => {
+    let blinkTimeout: any;
+    const nextBlink = () => {
+      blinkTimeout = setTimeout(() => {
+        setBlink(true);
+        setTimeout(() => {
+          setBlink(false);
+          nextBlink();
+        }, 100);
+      }, THREE.MathUtils.randInt(2000, 4000)); // Random interval between 2 and 4 seconds
+    };
+    nextBlink();
+
+    return () => clearTimeout(blinkTimeout); // Cleanup on unmount
+  }, []);
 
   const updateMorphTargets = (time: number) => {
     if (!visemeData) return;
@@ -539,6 +557,7 @@ function Nikita({ visemeData }: { visemeData: MouthCue[] | null }) {
 
     return () => cancelAnimationFrame(animationFrameId);
   }, [visemeData]);
+
 
   return (
     <>
